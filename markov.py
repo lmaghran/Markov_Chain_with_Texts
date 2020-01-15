@@ -1,6 +1,7 @@
 """Generate Markov text from text files."""
 
 import random
+import sys
 
 
 def open_and_read_file(file_path):
@@ -17,10 +18,10 @@ def open_and_read_file(file_path):
 
     return string_list
 
-string_list = open_and_read_file("green-eggs.txt")
 
 
-def make_chains(text_string):
+
+def make_chains(text_string, n):
     """Take input text as string; return dictionary of Markov chains.
 
     A chain will be a key that consists of a tuple of (word1, word2)
@@ -47,14 +48,22 @@ def make_chains(text_string):
 
     chains = {}
     for i, word in enumerate(text_string):
-        if i == len(text_string)-2:
+        if i == len(text_string)-n+1:
             break
 
         # create tuple of bi-gram at each iteration:
-        mark_tup = text_string[i], text_string[i+1]
+        mark_list = []
 
+        for index in list(range(n)):
+            # print(index)
+            mark_list.append(text_string[i+index])
+            mark_tup = tuple(mark_list)
+
+        
+        if i == len(text_string)-n:
+            break
         # store the next word that follows the bi-gram:       
-        third_word = text_string[i+2]
+        next_word = text_string[i+n]
 
         #in the chains dictionary, itstores an empty list as 
         # a value for each key element (bi-gram):
@@ -62,7 +71,7 @@ def make_chains(text_string):
 
         # print(mark_tup, chains[mark_tup])
 
-        chains[mark_tup].append(third_word) # sets list to third word
+        chains[mark_tup].append(next_word) # sets list to third word
         # chains[mark_tup] = [third_word]
         # for chain in chains[mark_tup].keys():
         # print(chains[mark_tup])
@@ -70,9 +79,10 @@ def make_chains(text_string):
     # for k,v in chains.items():
     #     print(k,v)
 
+
     return chains
 
-chains = make_chains (string_list)
+
 
 
 
@@ -80,36 +90,50 @@ def make_text(chains):
     """Return text from chains."""
     key_list = list(chains.keys())
     
-    first_word = key_list[0][0]
-    second_word = key_list[0][1]
+    #print(key_list)
+
+    # first_word = key_list[0][0]
+    # second_word = key_list[0][1]
     
-    words = [first_word, second_word]
+    words = list(key_list[0])
+    #print(words)
 
     current_tuple = key_list[0]
 
+    n = len(current_tuple)
 
     while chains.get(current_tuple) != None:
 
-        current_list = chains[current_tuple]
-        random_word = random.choice(current_list)
-        words.append(random_word)
-        current_tuple = (words[-2], words[-1])
+         current_list = chains[current_tuple]
+         random_word = random.choice(current_list)
+         words.append(random_word)
+         new_tuple= current_tuple + (random_word,)
+         current_tuple = tuple(list(new_tuple)[-n:])
+
 
 
     return " ".join(words)
 
 
-input_path = "green-eggs.txt"
+
+# input_path = sys.argv[1]
 
 # Open the file and turn it into one long string
-input_text = open_and_read_file(input_path)
+
 
 # Get a Markov chain
-chains = make_chains(input_text)
+# chains = make_chains(input_text)
 
 # Produce random text
-#random_text = make_text(chains)
+#
 
 #print(random_text)
 
-print(make_text(chains))
+# print(make_text(chains))
+
+input_path = "green-eggs.txt"
+# input_text = open_and_read_file(input_path)
+string_list = open_and_read_file(input_path)
+chains = make_chains (string_list,4)
+random_text = make_text(chains)
+print(random_text)
